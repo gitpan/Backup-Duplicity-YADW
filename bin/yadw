@@ -1,0 +1,115 @@
+#!/usr/bin/perl
+
+# PODNAME: yadw
+# ABSTRACT: Yet Another Duplicity Wrapper
+
+###### PACKAGES ######
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Backup::Duplicity::YADW;
+use File::Basename;
+use Data::Dumper;
+
+###### CONSTANTS ######
+
+use constant CONF_DIR     => "/etc/yadw";
+use constant DEFAULT_CONF => 'default.conf';
+
+###### GLOBAL VARIABLES ######
+
+use vars qw(
+	$Verbose
+	$DryRun
+	$Command
+	$ConfFileName
+	$Full
+	$Conf
+	$Pid
+	$Yadw
+);
+
+###### MAIN PROGRAM ######
+
+parse_cmdline();
+run_command();
+
+###### END MAIN #######
+
+sub run_command {
+
+	my %args;
+
+	if ($ConfFileName) {
+		$args{conf_dir}  = dirname $ConfFileName;
+		$args{conf_file} = basename $ConfFileName;
+	}
+
+	if ($Verbose) {
+		$args{verbose} = 1;		
+	}
+	
+	$Yadw = Backup::Duplicity::YADW->new( %args);
+	
+	if ( $Command eq 'full' ) {
+		$Yadw->backup('full');
+	}
+	elsif ( $Command =~ /^inc/ ) {
+		$Yadw->backup('inc');
+	}
+	elsif ( $Command eq 'expire' ) {
+		$Yadw->expire();
+	}
+	elsif ( $Command eq 'verify' ) {
+		$Yadw->verify();
+	}
+	else {
+		die "unhandled command";
+	}
+}
+
+sub parse_cmdline {
+
+	my @argv = @ARGV;
+
+	my $rc = GetOptions( 
+						 "dry-run" => \$DryRun,
+						 "verbose" => \$Verbose,
+						 "c=s"     => \$ConfFileName
+	);
+
+	$DryRun = defined $DryRun ? '--dry-run' : '';
+
+	$Command = pop @ARGV;
+	die "missing command" if !$Command;
+
+	$ConfFileName = DEFAULT_CONF if !$ConfFileName;
+
+	if ( !defined $Verbose ) {
+		$Verbose = 1 if $ENV{VERBOSE};				
+	}
+	
+	if ( !$rc ) {
+		print_usage();
+	}
+
+	@ARGV = @argv;
+}
+
+sub print_usage {
+	print "\n$0\n"
+		. "\t[-c <conf file>] (/etc/duplicity/<conf name.conf>)\n"
+		. "\t[-force]\n"
+		. "\t[-dry-run]\n"
+		. "\t[-verbose] (for this script, not duplicity)\n"
+		. "<command>\n" . "\n";
+
+	print "commands:\n"
+		. "\tfull\n"
+		. "\tinc\n"
+		. "\texpire\n"
+		. "\tverify\n" . "\n";
+
+	exit 1;
+}
