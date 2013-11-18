@@ -27,6 +27,9 @@ my $y = method_test_backup();
 method_test_verify($y);
 method_test_restore($y);
 method_test_expire($y);
+method_test_status($y);
+
+method_test_backup_bad();
 
 done_testing();
 
@@ -39,31 +42,32 @@ END {
 	}
 }
 
+sub method_test_status {
+	my $y = shift;
+
+	ok( $y->status );
+}
+
 sub method_test_restore {
 	my $y = shift;
-	
+
 	my $file = find_rand_file();
 	unlink $file or die "failed to unlink $file: $!";
-	
-	ok($y->restore(loc => $file));
-	ok( -e $file);
+
+	ok( $y->restore( loc => $file ) );
+	ok( -e $file );
 }
 
 sub find_rand_file {
-	my @cmd = (
-		'find',
-		TESTDIR . '/testdata',
-		'-type', 	
-		'f'
-		);
-		
+	my @cmd = ( 'find', TESTDIR . '/testdata', '-type', 'f' );
+
 	my @output = `@cmd`;
-	
-	my $i =	int(rand( @output ))	;
-	
+
+	my $i = int( rand(@output) );
+
 	my $file = $output[$i];
 	chomp $file;
-	
+
 	return $file;
 }
 
@@ -75,16 +79,32 @@ sub method_test_expire {
 
 sub method_test_backup {
 
-	say getcwd();
 	my $dir = generate_test_dir();
 
-	my $y = Backup::Duplicity::YADW->new( conf_dir  => "t/etc",
-								  conf_file => "test1.conf",
-								  verbose   => $ENV{VERBOSE}
-	);
+	my $y =
+		Backup::Duplicity::YADW->new( conf_dir  => "t/etc",
+									  conf_file => "test.conf",
+									  verbose   => $ENV{VERBOSE}
+		);
+
+	eval { $y->backup('bogus') };
+	ok($@);
 	ok( $y->backup('full') );
+	ok( $y->backup('inc') );
 
 	return $y;
+}
+
+sub method_test_backup_bad {
+	
+	my $y =
+		Backup::Duplicity::YADW->new( conf_dir  => "t/etc",
+									  conf_file => "test_bad.conf",
+									  verbose   => $ENV{VERBOSE}
+		);
+
+	eval {$y->backup('full') };
+	ok($@);
 }
 
 sub method_test_verify {

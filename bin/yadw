@@ -64,6 +64,9 @@ sub run_command {
 	elsif ( $Command eq 'verify' ) {
 		$Yadw->verify();
 	}
+	elsif ($Command eq 'status') {
+		$Yadw->status();
+	}
 	else {
 		die "unhandled command";
 	}
@@ -73,16 +76,21 @@ sub parse_cmdline {
 
 	my @argv = @ARGV;
 
+	my $help;
 	my $rc = GetOptions( 
 						 "dry-run" => \$DryRun,
 						 "verbose" => \$Verbose,
-						 "c=s"     => \$ConfFileName
+						 "c=s"     => \$ConfFileName,
+						 						 "help|?" => \$help
+						 
 	);
 
+	print_usage() if $help;
+	
 	$DryRun = defined $DryRun ? '--dry-run' : '';
 
 	$Command = pop @ARGV;
-	die "missing command" if !$Command;
+	print_usage("missing command") if !$Command;
 
 	$ConfFileName = DEFAULT_CONF if !$ConfFileName;
 
@@ -109,7 +117,9 @@ sub print_usage {
 		. "\tfull\n"
 		. "\tinc\n"
 		. "\texpire\n"
-		. "\tverify\n" . "\n";
+		. "\tverify\n" . 
+		  "\tstatus\n".
+		  "\n";
 
 	exit 1;
 }

@@ -11,11 +11,12 @@ share/etc/cron.hourly/yadw_inc_backup.sh
 share/etc/cron.weekly/yadw_full_backup.sh
 share/etc/yadw/default.conf
 t/00-load.t
-t/10-test1_conf.t
+t/10-methods.t
 t/20-yadw.t
 t/author-critic.t
 t/boilerplate.t
-t/etc/test1.conf
+t/etc/test.conf
+t/etc/test_bad.conf
 t/manifest.t
 t/pod-coverage.t
 t/pod.t

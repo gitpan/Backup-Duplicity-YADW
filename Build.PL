@@ -17,7 +17,7 @@ my %module_build_args = (
     "John Gravatt <john\@gravatt.org>"
   ],
   "dist_name" => "Backup-Duplicity-YADW",
-  "dist_version" => "0.01",
+  "dist_version" => "0.04",
   "license" => "perl",
   "module_name" => "Backup::Duplicity::YADW",
   "recommends" => {},

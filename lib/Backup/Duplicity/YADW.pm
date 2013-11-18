@@ -1,6 +1,6 @@
 package Backup::Duplicity::YADW;
 {
-  $Backup::Duplicity::YADW::VERSION = '0.01'; # TRIAL
+  $Backup::Duplicity::YADW::VERSION = '0.04';
 }
 
 # ABSTRACT: Yet Another Duplicity Wrapper
@@ -48,21 +48,12 @@ has _pid => ( is => 'rw', isa => 'PID::File' );
 sub BUILD {
 	my $self = shift;
 
-	if ( !File::Spec->file_name_is_absolute( $self->conf_file ) ) {
+	my $conf =
+		Config::ApacheFormat->new( fix_booleans     => 1,
+								   autoload_support => 0 );
 
-		my $filename = $self->conf_file;
-
-		#	$self->conf_dir( dirname($filename) );
-
-		my $conf =
-			Config::ApacheFormat->new( fix_booleans     => 1,
-									   autoload_support => 0 );
-
-		$conf->read( $self->conf_dir . "/" . $self->conf_file );
-
-		$self->_conf($conf);
-	}
-
+	$conf->read( $self->conf_dir . "/" . $self->conf_file );
+	$self->_conf($conf);
 	$self->_init_logs;
 }
 
@@ -96,13 +87,9 @@ sub backup {
 	$self->_get_sourcedir( \@cmd );
 	$self->_get_targetdir( \@cmd );
 
-	my $exit = $self->_system(@cmd);
+	$self->_system(@cmd);
 
-	if ( !$exit ) {
-		return 1;
-	}
-
-	return 0;
+	return 1;
 }
 
 sub _get_sourcedir {
@@ -116,18 +103,18 @@ sub _get_sourcedir {
 
 sub _get_targetdir {
 
-	args_pos 
+	args_pos
+
 		# required
-		my $self, 
-		my $cmds, 
-	
+		my $self, my $cmds,
+
 		# optional
-		my $loc => {isa => 'Str', optional => 1};
+		my $loc => { isa => 'Str', optional => 1 };
 
 	my $str = $self->_conf->get('targeturl');
-	$str.= "/$loc" if $loc;
-	
-	push(@$cmds, $str);
+	$str .= "/$loc" if $loc;
+
+	push( @$cmds, $str );
 }
 
 sub _get_async_upload {
@@ -241,13 +228,24 @@ sub expire {
 	push @cmd, '--extra-clean';
 	$self->_get_targetdir( \@cmd );
 
-	my $exit = $self->_system(@cmd);
+	$self->_system(@cmd);
 
-	if ( !$exit ) {
-		return 1;
-	}
+	return 1;
+}
 
-	return 0;
+
+sub status {
+	args_pos my $self;
+
+	my @cmd = ( 'duplicity', 'collection-status' );
+
+	$self->_get_encrypt_key( \@cmd );
+	$self->_get_s3_new( \@cmd );
+	$self->_get_targetdir( \@cmd );
+
+	$self->_system(@cmd);
+
+	return 1;
 }
 
 
@@ -268,13 +266,9 @@ sub verify {
 	$self->_get_targetdir( \@cmd );
 	$self->_get_sourcedir( \@cmd );
 
-	my $exit = $self->_system(@cmd);
+	$self->_system(@cmd);
 
-	if ( !$exit ) {
-		return 1;
-	}
-
-	return 0;
+	return 1;
 }
 
 sub _system {
@@ -292,8 +286,6 @@ sub _system {
 	}
 
 	$self->_log( 'info', "done" );
-
-	return $exit;
 }
 
 sub _log {
@@ -391,14 +383,15 @@ sub _get_encrypt_key {
 
 
 sub restore {
-	args 
+	args
+
 		# required
 		my $self => __PACKAGE__,
 		my $loc  => 'Str',
-		
+
 		# optional
-		my $days => { isa =>  'Int', optional => 1 };
-		
+		my $days => { isa => 'Int', optional => 1 };
+
 	$self->_log( 'info', "restoring $loc" );
 
 	my @cmd = ( 'duplicity', 'restore' );
@@ -408,15 +401,11 @@ sub restore {
 	$self->_get_log_file( \@cmd );
 	$self->_get_s3_new( \@cmd );
 	$self->_get_targetdir( \@cmd );
-	push(@cmd, $loc);
-	
-	my $exit = $self->_system(@cmd);
+	push( @cmd, $loc );
 
-	if ( !$exit ) {
-		return 1;
-	}
+	$self->_system(@cmd);
 
-	return 0;
+	return 1;
 }
 
 sub _get_dry_run {
@@ -429,12 +418,9 @@ sub _init_logs {
 	args_pos my $self;
 
 	$self->_get_syslog;
-	
+
 	if ( $self->use_syslog ) {
-		my $perror = $self->_verbose ? 'perror' : '';
-		my $pid    = 'pid';
-		my $join   = join ',', $perror, $pid;
-		openlog( 'backups', $join, 'user' );
+		openlog( 'backups', $$, 'user' );
 	}
 
 	$self->_log( 'info', "$0 @ARGV" );
@@ -463,7 +449,7 @@ Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
 
 =head1 VERSION
 
-version 0.01
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -521,16 +507,19 @@ Constructor - 'nuff said
 =head2 backup( $type )
 
 Tell duplicity to do a backup.  Requires either 'full' or 'inc' for a type.
-
-return: undef
+Returns true on success.
 
 =head2 expire( )
 
 Tell duplicity to "remove-older-than <days in conf file>".
 
+=head2 status( )
+
+Equivalent to "collection-status" in duplicity.  Returns true on success.
+
 =head2 verify( )
 
-Tell duplicity to verify backups.
+Tell duplicity to verify backups.  Returns true on success.
 
 =head2 restore( %args )
 
@@ -539,6 +528,8 @@ Tell duplicity to verify backups.
  
   # optional 
   [ time => <time according to duplicity manpage> ]
+
+Returns true on success.
 
 =head1 AUTHOR
 

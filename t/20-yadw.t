@@ -24,22 +24,22 @@ system( 'rm -rf ' . TESTDIR );
 
 generate_test_dir();
 
-my @cmd = qw( perl -I./lib ./bin/yadw full -c ./t/etc/test1.conf);
+my @cmd = qw( perl -I./lib ./bin/yadw full -c ./t/etc/test.conf);
 system @cmd;
 my $exit = $? >> 8;
 ok !$exit;
 
-@cmd = qw( perl -I./lib ./bin/yadw inc -c ./t/etc/test1.conf);
+@cmd = qw( perl -I./lib ./bin/yadw inc -c ./t/etc/test.conf);
 system @cmd;
 $exit = $? >> 8;
 ok !$exit;
 
-@cmd = qw( perl -I./lib ./bin/yadw verify -c ./t/etc/test1.conf);
+@cmd = qw( perl -I./lib ./bin/yadw verify -c ./t/etc/test.conf);
 system @cmd;
 $exit = $? >> 8;
 ok !$exit;
 
-@cmd = qw( perl -I./lib ./bin/yadw expire -c ./t/etc/test1.conf);
+@cmd = qw( perl -I./lib ./bin/yadw expire -c ./t/etc/test.conf);
 system @cmd;
 $exit = $? >> 8;
 ok !$exit;
