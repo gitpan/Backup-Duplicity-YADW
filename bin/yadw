@@ -92,8 +92,6 @@ sub parse_cmdline {
 	$Command = pop @ARGV;
 	print_usage("missing command") if !$Command;
 
-	$ConfFileName = DEFAULT_CONF if !$ConfFileName;
-
 	if ( !defined $Verbose ) {
 		$Verbose = 1 if $ENV{VERBOSE};				
 	}

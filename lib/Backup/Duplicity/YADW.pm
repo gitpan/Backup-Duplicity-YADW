@@ -1,6 +1,6 @@
 package Backup::Duplicity::YADW;
 {
-  $Backup::Duplicity::YADW::VERSION = '0.04';
+  $Backup::Duplicity::YADW::VERSION = '0.05';
 }
 
 # ABSTRACT: Yet Another Duplicity Wrapper
@@ -449,7 +449,7 @@ Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 
