@@ -1,5 +1,8 @@
 Revision history for Backup-Duplicity-YADW
 
+0.06	2013-11-21
+		minor modifications.  mostly documentation.
+		
 0.05	2013-11-17
 		bug fix in yadw and method test fix
 

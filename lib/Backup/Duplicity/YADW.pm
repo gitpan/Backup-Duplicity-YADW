@@ -1,11 +1,7 @@
 package Backup::Duplicity::YADW;
 {
-  $Backup::Duplicity::YADW::VERSION = '0.05';
+  $Backup::Duplicity::YADW::VERSION = '0.06';
 }
-
-# ABSTRACT: Yet Another Duplicity Wrapper
-
-
 
 use Modern::Perl;
 use Moose;
@@ -24,6 +20,11 @@ use Sys::Syslog;
 
 use constant CONF_DIR  => '/etc/yadw';
 use constant CONF_FILE => 'default.conf';
+
+
+# ABSTRACT: Yet Another Duplicity Wrapper
+
+
 
 
 has conf_dir => ( is => 'rw', isa => 'Str', default => CONF_DIR );
@@ -109,10 +110,10 @@ sub _get_targetdir {
 		my $self, my $cmds,
 
 		# optional
-		my $loc => { isa => 'Str', optional => 1 };
+		my $locaction => { isa => 'Str', optional => 1 };
 
 	my $str = $self->_conf->get('targeturl');
-	$str .= "/$loc" if $loc;
+	$str .= "/$locaction" if $locaction;
 
 	push( @$cmds, $str );
 }
@@ -387,12 +388,12 @@ sub restore {
 
 		# required
 		my $self => __PACKAGE__,
-		my $loc  => 'Str',
+		my $location  => 'Str',
 
 		# optional
 		my $days => { isa => 'Int', optional => 1 };
 
-	$self->_log( 'info', "restoring $loc" );
+	$self->_log( 'info', "restoring $location" );
 
 	my @cmd = ( 'duplicity', 'restore' );
 
@@ -401,7 +402,7 @@ sub restore {
 	$self->_get_log_file( \@cmd );
 	$self->_get_s3_new( \@cmd );
 	$self->_get_targetdir( \@cmd );
-	push( @cmd, $loc );
+	push( @cmd, $location );
 
 	$self->_system(@cmd);
 
@@ -449,7 +450,7 @@ Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 
@@ -523,13 +524,21 @@ Tell duplicity to verify backups.  Returns true on success.
 
 =head2 restore( %args )
 
-  # required
-  loc => <directory or file location>
- 
-  # optional 
-  [ time => <time according to duplicity manpage> ]
+Tell duplicity to do a restore.
+
+Required args:
+
+  location => $path
+
+Optional args:
+
+  time => $time (see duplicity manpage)
 
 Returns true on success.
+
+=head1 SEE ALSO
+
+yadw (ready to use backup script)
 
 =head1 AUTHOR
 

@@ -10,6 +10,7 @@ use Cwd;
 use File::Copy;
 use File::Basename;
 use Data::Dumper;
+use File::Which;
 
 ###### CONSTANTS ######
 
@@ -22,6 +23,10 @@ use vars qw();
 ###### MAIN ######
 
 system( 'rm -rf ' . TESTDIR );
+
+if ( !which('duplicity') ) {
+	plan skip_all => 'unable to find duplicity on PATH';
+}
 
 my $y = method_test_backup();
 method_test_verify($y);
@@ -54,7 +59,7 @@ sub method_test_restore {
 	my $file = find_rand_file();
 	unlink $file or die "failed to unlink $file: $!";
 
-	ok( $y->restore( loc => $file ) );
+	ok( $y->restore( location => $file ) );
 	ok( -e $file );
 }
 
@@ -96,14 +101,14 @@ sub method_test_backup {
 }
 
 sub method_test_backup_bad {
-	
+
 	my $y =
 		Backup::Duplicity::YADW->new( conf_dir  => "t/etc",
 									  conf_file => "test_bad.conf",
 									  verbose   => $ENV{VERBOSE}
 		);
 
-	eval {$y->backup('full') };
+	eval { $y->backup('full') };
 	ok($@);
 }
 

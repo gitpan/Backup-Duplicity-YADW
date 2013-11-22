@@ -13,7 +13,6 @@ share/etc/yadw/default.conf
 t/00-load.t
 t/10-methods.t
 t/20-yadw.t
-t/author-critic.t
 t/boilerplate.t
 t/etc/test.conf
 t/etc/test_bad.conf
