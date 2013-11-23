@@ -1,6 +1,6 @@
 package Backup::Duplicity::YADW;
 {
-  $Backup::Duplicity::YADW::VERSION = '0.08';
+  $Backup::Duplicity::YADW::VERSION = '0.09';
 }
 
 use Modern::Perl;
@@ -10,17 +10,20 @@ use warnings FATAL => 'all';
 use Smart::Args;
 use Carp;
 use Config::ApacheFormat;
-use File::Spec;
 use File::Basename;
 use String::Util 'crunch', 'trim';
 use IPC::Run3;
 use File::Path;
 use Data::Dumper;
 use Sys::Syslog;
+use PID::File;
 
 use constant CONF_DIR  => '/etc/yadw';
 use constant CONF_FILE => 'default.conf';
 
+use constant PID_EXISTS => 10;
+
+use vars qw($ErrCode $ErrStr);
 
 # ABSTRACT: Yet Another Duplicity Wrapper
 
@@ -49,6 +52,8 @@ has _pid => ( is => 'rw', isa => 'PID::File' );
 sub BUILD {
 	my $self = shift;
 
+	$ErrCode = 0;
+
 	my $conf =
 		Config::ApacheFormat->new( fix_booleans     => 1,
 								   autoload_support => 0 );
@@ -56,6 +61,7 @@ sub BUILD {
 	$conf->read( $self->conf_dir . "/" . $self->conf_file );
 	$self->_conf($conf);
 	$self->_init_logs;
+	$self->_write_pidfile;
 }
 
 sub DEMOLISH {
@@ -171,11 +177,12 @@ sub _write_pidfile {
 
 	if ( -e $pid->file ) {
 		if ( $pid->running ) {
-			$self->_log( 'info', "backups are currently running" );
-			exit;
+			$ErrCode = PID_EXISTS;
+			$ErrStr  = "yadw is already running";
+			confess $ErrStr;
 		}
 		else {
-			$self->_log( 'notice', "removing stale pidfile", $pidfile );
+			$self->_log( 'notice', "removing stale pidfile $pidfile" );
 			unlink $pid->file or confess "failed to remove pidfile: $!";
 		}
 	}
@@ -341,16 +348,13 @@ sub _get_log_file {
 sub _get_syslog {
 	args_pos my $self;
 
-	if ( !defined $self->use_syslog ) {
+	my $toggle = $self->_conf->get('syslog');
 
-		my $toggle = $self->_conf->get('syslog');
-
-		if ($toggle) {
-			$self->use_syslog(1);
-		}
-		else {
-			$self->use_syslog(0);
-		}
+	if ($toggle) {
+		$self->use_syslog(1);
+	}
+	else {
+		$self->use_syslog(0);
 	}
 }
 
@@ -387,8 +391,8 @@ sub restore {
 	args
 
 		# required
-		my $self => __PACKAGE__,
-		my $location  => 'Str',
+		my $self     => __PACKAGE__,
+		my $location => 'Str',
 
 		# optional
 		my $days => { isa => 'Int', optional => 1 };
@@ -450,7 +454,7 @@ Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 

@@ -33,7 +33,8 @@ method_test_verify($y);
 method_test_restore($y);
 method_test_expire($y);
 method_test_status($y);
-
+verify_pidfile_check();
+$y = undef;
 method_test_backup_bad();
 
 done_testing();
@@ -98,6 +99,19 @@ sub method_test_backup {
 	ok( $y->backup('inc') );
 
 	return $y;
+}
+
+sub verify_pidfile_check {
+	eval {
+		my $y =
+			Backup::Duplicity::YADW->new( conf_dir  => "t/etc",
+										  conf_file => "test_bad.conf",
+										  verbose   => $ENV{VERBOSE}
+			);
+	};
+	ok($@);
+	ok( $Backup::Duplicity::YADW::ErrCode
+		== Backup::Duplicity::YADW::PID_EXISTS() );
 }
 
 sub method_test_backup_bad {

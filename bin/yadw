@@ -15,9 +15,6 @@ use Data::Dumper;
 
 ###### CONSTANTS ######
 
-use constant CONF_DIR     => "/etc/yadw";
-use constant DEFAULT_CONF => 'default.conf';
-
 ###### GLOBAL VARIABLES ######
 
 use vars qw(
@@ -48,11 +45,22 @@ sub run_command {
 	}
 
 	if ($Verbose) {
-		$args{verbose} = 1;		
+		$args{verbose} = 1;
 	}
 	
-	$Yadw = Backup::Duplicity::YADW->new( %args);
-	
+	eval { $Yadw = Backup::Duplicity::YADW->new(%args); };
+	if ($@) {
+		if ( $Backup::Duplicity::YADW::ErrCode
+			 == Backup::Duplicity::YADW::PID_EXISTS() )
+		{
+			print "yadw is already running.\n";
+			exit 0;
+		}
+		else {
+			die $@;
+		}
+	}
+
 	if ( $Command eq 'full' ) {
 		$Yadw->backup('full');
 	}
@@ -65,7 +73,7 @@ sub run_command {
 	elsif ( $Command eq 'verify' ) {
 		$Yadw->verify();
 	}
-	elsif ($Command eq 'status') {
+	elsif ( $Command eq 'status' ) {
 		$Yadw->status();
 	}
 	else {
@@ -78,25 +86,25 @@ sub parse_cmdline {
 	my @argv = @ARGV;
 
 	my $help;
-	my $rc = GetOptions( 
-						 "dry-run" => \$DryRun,
-						 "verbose" => \$Verbose,
-						 "c=s"     => \$ConfFileName,
-						 						 "help|?" => \$help
-						 
+	my $rc = GetOptions(
+		"dry-run" => \$DryRun,
+		"verbose" => \$Verbose,
+		"c=s"     => \$ConfFileName,
+		"help|?"  => \$help
+
 	);
 
 	print_usage() if $help;
-	
+
 	$DryRun = defined $DryRun ? '--dry-run' : '';
 
 	$Command = pop @ARGV;
 	print_usage("missing command") if !$Command;
 
 	if ( !defined $Verbose ) {
-		$Verbose = 1 if $ENV{VERBOSE};				
+		$Verbose = 1 if $ENV{VERBOSE};
 	}
-	
+
 	if ( !$rc ) {
 		print_usage();
 	}
@@ -116,9 +124,8 @@ sub print_usage {
 		. "\tfull\n"
 		. "\tinc\n"
 		. "\texpire\n"
-		. "\tverify\n" . 
-		  "\tstatus\n".
-		  "\n";
+		. "\tverify\n"
+		. "\tstatus\n" . "\n";
 
 	exit 1;
 }
@@ -135,7 +142,7 @@ yadw - Yet Another Duplicity Wrapper command line utility
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 
