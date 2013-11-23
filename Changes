@@ -1,5 +1,8 @@
 Revision history for Backup-Duplicity-YADW
 
+0.08	2013-11-23
+		added pod to yadw command line utility and default.conf
+		
 0.07 	2013-11-23
 		added skip to 20-yadw.t when duplicity not found
 		

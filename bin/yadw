@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 
 # PODNAME: yadw
-# ABSTRACT: Yet Another Duplicity Wrapper
+# ABSTRACT: Yet Another Duplicity Wrapper command line utility
+
 
 ###### PACKAGES ######
 
@@ -105,7 +106,7 @@ sub parse_cmdline {
 
 sub print_usage {
 	print "\n$0\n"
-		. "\t[-c <conf file>] (/etc/duplicity/<conf name.conf>)\n"
+		. "\t[-c <conf file>]\n"
 		. "\t[-force]\n"
 		. "\t[-dry-run]\n"
 		. "\t[-verbose] (for this script, not duplicity)\n"
@@ -130,11 +131,62 @@ __END__
 
 =head1 NAME
 
-yadw - Yet Another Duplicity Wrapper
+yadw - Yet Another Duplicity Wrapper command line utility
 
 =head1 VERSION
 
-version 0.07
+version 0.08
+
+=head1 SYNOPSIS
+
+  yadw full
+  yadw inc
+  yadw verify
+  yadw status
+  yadw expire
+  yadw restore /path/to/dir/or/file
+  
+  yadw -c /etc/yadw/extras.conf full
+  yadw -c /etc/yadw/extras.conf inc
+  ....
+
+=head1 SAMPLE ETC FILES
+
+Sample config/cron scripts can be found in the "share" dir.  To find your 
+"share" dir run this:
+
+  perl '-MFile::ShareDir ":ALL"' -E 'say dist_dir("Backup-Duplicity-YADW")';
+
+=head1 CONFIGURATION
+
+To setup your system for backups I recommend these steps:
+
+1.  Login as root and install Backup::Duplicity::YADW if you have not done so
+already.
+
+2.  Install the default.conf:
+
+  mkdir /etc/yadw
+  cp <sharedir>/yadw/default.conf /etc/yadw
+  chmod 600 /etc/yadw/default.conf
+
+2.  Modify /etc/yadw/default.conf to your liking.
+
+3.  Run a manual full backup test.  This will also prime the pump so to speak
+for automated backups to run.
+
+  yadw full
+
+=head1 AUTOMATE
+
+1.  *AFTER* a successful manual full backup, install weekly cron to perform
+weekly full backups.
+
+  cp <sharedir>/cron.weekly/yadw_full_backup.sh /etc/cron.weekly
+
+2.  Install hourly cron for inc backups.
+
+  cp <sharedir>/cron.hourly/yadw_inc_backup.sh /etc/cron.hourly
 
 =head1 AUTHOR
 
