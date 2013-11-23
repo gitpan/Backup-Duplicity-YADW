@@ -9,6 +9,7 @@ use File::Path;
 use Cwd;
 use File::Copy;
 use File::Basename;
+use File::Which;
 
 ###### CONSTANTS ######
 
@@ -21,6 +22,10 @@ use vars qw();
 ###### MAIN ######
 
 system( 'rm -rf ' . TESTDIR );
+
+if ( !which('duplicity') ) {
+	plan skip_all => 'unable to find duplicity on PATH';
+}
 
 generate_test_dir();
 
