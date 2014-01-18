@@ -1,8 +1,5 @@
 package Backup::Duplicity::YADW;
-{
-  $Backup::Duplicity::YADW::VERSION = '0.09';
-}
-
+$Backup::Duplicity::YADW::VERSION = '0.10';
 use Modern::Perl;
 use Moose;
 use namespace::autoclean;
@@ -454,7 +451,7 @@ Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =head1 SYNOPSIS
 
