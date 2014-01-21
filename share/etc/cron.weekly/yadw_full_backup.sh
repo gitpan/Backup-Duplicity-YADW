@@ -1,12 +1,12 @@
 #!/bin/bash
 
-source ~/.bash_profile
+source /root/.bash_profile
 
 cd /etc/yadw
 FILES=*
 
 for f in $FILES
 do
-	yadw full -c $f		&& \
-	yadw expire -c $f
+	yadw full -c $f 1>/dev/null && \
+	yadw expire -c $f 1>/dev/null
 done
