@@ -1,4 +1,5 @@
 package Backup::Duplicity::YADW;
+$Backup::Duplicity::YADW::VERSION = '0.12';
 $Backup::Duplicity::YADW::VERSION = '0.11';
 use Modern::Perl;
 use Moose;
@@ -23,8 +24,6 @@ use constant PID_EXISTS => 10;
 use vars qw($ErrCode $ErrStr);
 
 # ABSTRACT: Yet Another Duplicity Wrapper
-
-
 
 
 has conf_dir => ( is => 'rw', isa => 'Str', default => CONF_DIR );
@@ -60,13 +59,6 @@ sub BUILD {
 	$self->_init_logs;
 	$self->_write_pidfile;
 }
-
-sub DEMOLISH {
-	my $self = shift;
-
-	$self->_remove_pidfile;
-}
-
 
 sub backup {
 
@@ -170,8 +162,8 @@ sub _write_pidfile {
 
 	$self->_log( 'info', "pidfile=$pidfile" );
 
-	my $pid = PID::File->new( file => $pidfile );
-
+	my $pid = PID::File->new( file => $pidfile);
+	
 	if ( -e $pid->file ) {
 		if ( $pid->running ) {
 			$ErrCode = PID_EXISTS;
@@ -185,19 +177,8 @@ sub _write_pidfile {
 	}
 
 	$pid->create or confess "failed to write pidfile: $!";
-
+	$pid->guard;  # remove pidfile automatically when it goes out of scope
 	$self->_pid($pid);
-}
-
-sub _remove_pidfile {
-	args_pos my $self;
-
-	my $pid = $self->_pid;
-
-	if ($pid) {
-		$pid->remove
-			or $self->_log( 'err', "failed to remove pidfile: $!" );
-	}
 }
 
 sub _get_expire_days {
@@ -451,7 +432,7 @@ Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
 
 =head1 VERSION
 
-version 0.11
+version 0.12
 
 =head1 SYNOPSIS
 
@@ -477,6 +458,14 @@ This is a wrapper for Duplicity.  I found my command lines for invoking
 Duplicity getting quite lengthy and wanted a way to persist my configurations
 in an intuitive manner.  I looked at several other Duplicity wrappers, but
 none of them quite fit what I wanted.  So Backup::Duplicity::YADW was born.
+
+=head1 NAME
+
+Backup::Duplicity::YADW - Yet Another Duplicity Wrapper
+
+=head1 VERSION
+
+version 0.11
 
 =head1 ATTRIBUTES
 
@@ -540,6 +529,17 @@ Returns true on success.
 =head1 SEE ALSO
 
 yadw (ready to use backup script)
+
+=head1 AUTHOR
+
+John Gravatt <john@gravatt.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2013 by John Gravatt.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =head1 AUTHOR
 

@@ -18,7 +18,7 @@ my %module_build_args = (
     "John Gravatt <john\@gravatt.org>"
   ],
   "dist_name" => "Backup-Duplicity-YADW",
-  "dist_version" => "0.11",
+  "dist_version" => "0.12",
   "license" => "perl",
   "module_name" => "Backup::Duplicity::YADW",
   "recommends" => {},
@@ -39,7 +39,6 @@ my %module_build_args = (
     "Sys::Syslog" => 0,
     "constant" => 0,
     "namespace::autoclean" => 0,
-    "strict" => 0,
     "vars" => 0,
     "warnings" => 0
   },
@@ -55,7 +54,8 @@ my %module_build_args = (
     "File::RandomGenerator" => 0,
     "File::Which" => 0,
     "Test::More" => 0,
-    "perl" => "5.006"
+    "perl" => "5.006",
+    "strict" => 0
   }
 );
 
@@ -67,7 +67,8 @@ my %fallback_build_requires = (
   "File::Which" => 0,
   "Module::Build" => "0.3601",
   "Test::More" => 0,
-  "perl" => "5.006"
+  "perl" => "5.006",
+  "strict" => 0
 );
 
 

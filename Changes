@@ -1,5 +1,8 @@
 Revision history for Backup-Duplicity-YADW
 
+0.12    2014-01-26
+		fixed pidfile bug where the file did not get cleaned up properly
+		
 0.11	2014-01-18
 		modified share/etc/yadw_inc_backup.sh, share/etc/yadw_full_backup.sh, 
 		and share/etc/yadw/default.conf default settings
